@@ -15,7 +15,7 @@ from PIL import Image
 
 # Configurar la página
 st.set_page_config(
-    page_title="Predictor de Precios de Viviendas",
+    page_title="Precios de Viviendas",
     page_icon="🏠",
     layout="wide"
 )
@@ -44,11 +44,11 @@ df = load_data()
 model, scaler = load_model()
 
 # Título de la aplicación
-st.title("🏠 Predictor de Precios de Viviendas")
+st.title("Precios de Viviendas")
 st.markdown("Esta aplicación permite predecir el precio de viviendas basado en características clave.")
 
 # Sidebar para navegación
-page = st.sidebar.radio("Navegación", ["Inicio", "Análisis Exploratorio", "Predicción", "Acerca de"])
+page = st.sidebar.radio("Navegación", ["Inicio", "Predicción"])
 
 # Página de inicio
 if page == "Inicio":
@@ -187,7 +187,7 @@ elif page == "Predicción":
                                   float(df['LSTAT'].mean()))
             
             with col2:
-                ptratio = st.slider("Ratio alumno-profesor (PTRATIO)", 
+                ptratio = st.slider("Ratio (PTRATIO)", 
                                     float(df['PTRATIO'].min()), 
                                     float(df['PTRATIO'].max()), 
                                     float(df['PTRATIO'].mean()))
