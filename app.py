@@ -1,7 +1,5 @@
 """
-APLICACIÓN STREAMLIT PARA DESPLIEGUE DEL MODELO DE PRECIOS DE VIVIENDAS
-Esta aplicación permite a los usuarios interactuar con el modelo para predecir precios de viviendas
-y visualizar el análisis exploratorio de datos.
+APLICACIÓN STREAMLIT PARA PREDICCIÓN DE PRECIOS DE VIVIENDAS
 """
 
 import streamlit as st
@@ -12,12 +10,14 @@ import seaborn as sns
 import joblib
 import os
 from PIL import Image
+import datetime
 
 # Configurar la página
 st.set_page_config(
-    page_title="Precios de Viviendas",
+    page_title="Predictor de Precios de Viviendas",
     page_icon="🏠",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 # Funciones para cargar datos y modelos
@@ -43,175 +43,136 @@ def load_model():
 df = load_data()
 model, scaler = load_model()
 
-# Título de la aplicación
-st.title("Precios de Viviendas")
-st.markdown("Esta aplicación permite predecir el precio de viviendas basado en características clave.")
-
-# Sidebar para navegación
-page = st.sidebar.radio("Navegación", ["Inicio", "Predicción"])
+# Sidebar
+with st.sidebar:
+    st.image("assets/logo.png", width=160)
+    page = st.sidebar.radio("Ir a:", ["Inicio", "Predicción", "Contacto"])
+    st.markdown("---")
+    st.caption("© 2025 Predictor de Viviendas. Desarrollado por Home Value Predictor")
 
 # Página de inicio
 if page == "Inicio":
-    st.header("Bienvenido al Predictor de Precios de Viviendas")
+    st.title("Bienvenido al Predictor de Precios de Viviendas")
+    st.markdown("""
+    Esta aplicación utiliza un modelo de Machine Learning para estimar el precio de una vivienda basado en características relevantes.
+    """)
     
     col1, col2 = st.columns([2, 1])
     
     with col1:
+        st.subheader("¿Qué puedes hacer aquí?")
         st.markdown("""
-        ### 📊 ¿Qué puede hacer esta aplicación?
-        
-        - **Explorar datos** de viviendas y sus características
-        - **Visualizar relaciones** entre diferentes variables
-        - **Predecir precios** basados en un modelo entrenado
-        
-        Utilice el menú de navegación para explorar las diferentes secciones.
+        - **Predecir precios** de viviendas de manera instantánea.
+        - **Explorar** cómo distintos factores influyen en el precio.
+        - **Comparar** distintas características para diferentes viviendas.
         """)
         
-        if df is not None:
-            st.subheader("Vista previa de los datos")
-            st.dataframe(df.head())
-    
     with col2:
-        if df is not None:
-            st.markdown("### 📈 Precio promedio por número de habitaciones")
-            # Agrupar por rango de habitaciones
-            fig, ax = plt.subplots()
-            df['RM_bin'] = pd.cut(df['RM'], bins=5)
-            grouped = df.groupby('RM_bin')['PRICE'].mean().reset_index()
-            sns.barplot(x='RM_bin', y='PRICE', data=grouped, ax=ax)
-            ax.set_xlabel('Número de habitaciones (agrupado)')
-            ax.set_ylabel('Precio promedio')
-            plt.xticks(rotation=45)
-            st.pyplot(fig)
+        st.image("assets/house_welcome.png", use_container_width=True)
 
-            st.markdown("### 📈 Estadisticas descriptivas")
-            st.dataframe(df.describe())
-
-# Página de análisis exploratorio
-elif page == "Análisis Exploratorio":
-    st.header("Análisis Exploratorio de Datos")
-    
-    if df is not None:
-        st.markdown("""
-        Esta sección muestra diferentes visualizaciones de los datos para entender mejor las relaciones
-        entre las variables y su impacto en el precio de las viviendas.
-        """)
-        
-        # Matriz de correlación
-        st.subheader("Matriz de Correlación")
-        corr = df.corr()
-        fig, ax = plt.subplots(figsize=(10, 8))
-        mask = np.triu(np.ones_like(corr, dtype=bool))
-        cmap = sns.diverging_palette(230, 20, as_cmap=True)
-        sns.heatmap(corr, mask=mask, cmap=cmap, vmax=.3, center=0,
-                    square=True, linewidths=.5, annot=True, fmt='.2f')
-        st.pyplot(fig)
-        
-        # Relaciones entre variables
-        st.subheader("Relaciones con el Precio")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            fig, ax = plt.subplots(figsize=(6, 4))
-            sns.scatterplot(x='RM', y='PRICE', data=df, ax=ax)
-            ax.set_title('Habitaciones vs Precio')
-            st.pyplot(fig)
-            
-            fig, ax = plt.subplots(figsize=(6, 4))
-            sns.scatterplot(x='PTRATIO', y='PRICE', data=df, ax=ax)
-            ax.set_title('Ratio Alumno-Profesor vs Precio')
-            st.pyplot(fig)
-        
-        with col2:
-            fig, ax = plt.subplots(figsize=(6, 4))
-            sns.scatterplot(x='LSTAT', y='PRICE', data=df, ax=ax)
-            ax.set_title('Estatus Bajo (%) vs Precio')
-            st.pyplot(fig)
-            
-            fig, ax = plt.subplots(figsize=(6, 4))
-            sns.scatterplot(x='DIS', y='PRICE', data=df, ax=ax)
-            ax.set_title('Distancia a Centros de Empleo vs Precio')
-            st.pyplot(fig)
-        
-        # Distribución de precios
-        st.subheader("Distribución de Precios")
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.histplot(df['PRICE'], kde=True, ax=ax)
-        ax.set_title('Distribución de Precios de Viviendas')
-        st.pyplot(fig)
-        
-        # Exploración interactiva
-        st.subheader("Exploración Interactiva")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            x_var = st.selectbox("Variable X", options=df.columns.tolist())
-        
-        with col2:
-            y_var = st.selectbox("Variable Y", options=df.columns.tolist(), index=4)  # Default to PRICE
-        
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.scatterplot(x=x_var, y=y_var, data=df, ax=ax)
-        ax.set_title(f'Relación entre {x_var} y {y_var}')
-        st.pyplot(fig)
-    else:
-        st.error("No se pueden mostrar visualizaciones sin datos.")
+    st.markdown("---")
+    st.subheader("¿Cómo funciona?")
+    st.markdown("""
+    Solo debes ingresar algunos datos básicos de la vivienda y el modelo te dará una predicción aproximada del precio.  
+    🔥 ¡Ideal para agentes inmobiliarios, compradores y desarrolladores de proyectos!
+    """)
 
 # Página de predicción
 elif page == "Predicción":
-    st.header("Predicción de Precios de Viviendas")
-    
+    st.title("Predicción de Precios de Viviendas 🧮")
     st.markdown("""
-    En esta sección puede ingresar las características de una vivienda y obtener una predicción 
-    del precio basada en el modelo entrenado.
+    Ingrese las características de la vivienda para obtener una predicción del precio basado en nuestro modelo entrenado.
     """)
-    
+
     if model is not None and scaler is not None and df is not None:
-        # Formulario para ingresar valores
         with st.form("prediction_form"):
-            st.subheader("Ingrese las características de la vivienda")
+            st.subheader("🔎 Características de la vivienda")
             
             col1, col2 = st.columns(2)
             
             with col1:
                 rm = st.slider("Número medio de habitaciones (RM)", 
-                               float(df['RM'].min()), 
-                               float(df['RM'].max()), 
-                               float(df['RM'].mean()))
+                               min_value=float(df['RM'].min()), 
+                               max_value=float(df['RM'].max()), 
+                               value=float(df['RM'].mean()))
                 
                 lstat = st.slider("% de población de estatus bajo (LSTAT)", 
-                                  float(df['LSTAT'].min()), 
-                                  float(df['LSTAT'].max()), 
-                                  float(df['LSTAT'].mean()))
+                                  min_value=float(df['LSTAT'].min()), 
+                                  max_value=float(df['LSTAT'].max()), 
+                                  value=float(df['LSTAT'].mean()))
             
             with col2:
                 ptratio = st.slider("Ratio (PTRATIO)", 
-                                    float(df['PTRATIO'].min()), 
-                                    float(df['PTRATIO'].max()), 
-                                    float(df['PTRATIO'].mean()))
+                                    min_value=float(df['PTRATIO'].min()), 
+                                    max_value=float(df['PTRATIO'].max()), 
+                                    value=float(df['PTRATIO'].mean()))
                 
                 dis = st.slider("Distancia a centros de empleo (DIS)", 
-                                float(df['DIS'].min()), 
-                                float(df['DIS'].max()), 
-                                float(df['DIS'].mean()))
+                                min_value=float(df['DIS'].min()), 
+                                max_value=float(df['DIS'].max()), 
+                                value=float(df['DIS'].mean()))
             
-            submit_button = st.form_submit_button("Predecir Precio")
-        
-        # Mostrar predicción cuando se envía el formulario
+            submit_button = st.form_submit_button("🚀 Predecir Precio")
+
         if submit_button:
-            # Crear un array con los valores ingresados
             input_data = np.array([[rm, lstat, ptratio, dis]])
-            
-            # Estandarizar los datos
             input_scaled = scaler.transform(input_data)
-            
-            # Realizar la predicción
             prediction = model.predict(input_scaled)[0]
-            
-            # Mostrar el resultado
-            st.success(f"El precio predicho para esta vivienda es: ${prediction:.2f}k")
-            
-            # Mostrar interpretación de la predicción
-            st.subheader("Interpretación de la predicción")
+
+            st.success(f"🏡 El precio estimado para esta vivienda es: **${prediction:.2f}k**")
+
+            st.markdown("---")
+            st.subheader("📈 ¿Cómo interpretarlo?")
+            st.markdown("""
+            - Este valor es una estimación basada en características promedio y puede variar dependiendo de condiciones de mercado.
+            - Para una evaluación más precisa, sugerimos considerar variables adicionales.
+            """)
+
+    else:
+        st.warning("🔧 El modelo o los datos no están disponibles. Por favor, verifique los archivos.")
+
+# Página de contacto
+elif page == "Contacto":
+    st.title("📬 Contáctanos")
+    st.markdown("""
+    ¿Quieres recibir una asesoría personalizada o más información?  
+    ¡Déjanos tus datos y nos pondremos en contacto contigo!
+    """)
+
+    with st.form("contact_form"):
+        nombre = st.text_input("Nombre completo", placeholder="Tu nombre")
+        email = st.text_input("Correo electrónico", placeholder="tunombre@correo.com")
+        mensaje = st.text_area("Mensaje", placeholder="Escribe aquí tu mensaje...")
+        
+        submit_contact = st.form_submit_button("Enviar mensaje 📩")
+
+    if submit_contact:
+        # Puedes guardar los datos o enviar un correo. Aquí lo mostramos por simplicidad:
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        contacto = pd.DataFrame({
+            'Nombre': [nombre],
+            'Email': [email],
+            'Mensaje': [mensaje],
+            'Fecha': [timestamp]
+        })
+        
+        # Guardar en un archivo CSV (opcional)
+        if not os.path.exists("contactos.csv"):
+            contacto.to_csv("contactos.csv", index=False)
+        else:
+            contacto.to_csv("contactos.csv", mode='a', header=False, index=False)
+        
+        st.success("✅ ¡Gracias por contactarnos! Te responderemos pronto.")
+
+# Footer personalizado
+st.markdown("""
+<style>
+footer {
+    visibility: hidden;
+}
+</style>
+<div style="text-align: center; padding: 10px; font-size: 12px; color: gray;">
+Desarrollado por Home Value Predictor| © 2025 Predictor de Viviendas
+</div>
+""", unsafe_allow_html=True)
