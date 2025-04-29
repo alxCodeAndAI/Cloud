@@ -92,9 +92,9 @@ elif page == "Avaluar":
             
             with col1:
                 rm = st.slider("Número medio de habitaciones (RM)", 
-                               min_value=float(df['RM'].min()), 
-                               max_value=float(df['RM'].max()), 
-                               value=float(df['RM'].mean()))
+                               min_value=int(df['RM'].min()), 
+                               max_value=int(df['RM'].max()), 
+                               value=int(df['RM'].mean()))
                 
                 lstat = st.slider("% de población de estatus bajo (LSTAT)", 
                                   min_value=float(df['LSTAT'].min()), 
