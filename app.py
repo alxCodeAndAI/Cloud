@@ -48,7 +48,7 @@ with st.sidebar:
     st.image("assets/logo.png", width=160)
     page = st.sidebar.radio("Ir a:", ["Inicio", "Avaluar", "Contacto"])
     st.markdown("---")
-    st.caption("© 2025 Avaluador de Viviendas. Desarrollado por Home Value Avaluador")
+    st.caption("© 2025 Avaluador de Viviendas. Desarrollado por Home Value ")
 
 # Página de inicio
 if page == "Inicio":
@@ -78,7 +78,7 @@ if page == "Inicio":
     """)
 
 # Página de predicción
-elif page == "Predicción":
+elif page == "Avaluar":
     st.title("Predicción de Precios de Viviendas 🧮")
     st.markdown("""
     Ingrese las características de la vivienda para obtener una predicción del precio basado en nuestro modelo entrenado.
@@ -92,9 +92,9 @@ elif page == "Predicción":
             
             with col1:
                 rm = st.slider("Número medio de habitaciones (RM)", 
-                               min_value=int(df['RM'].min()), 
-                               max_value=int(df['RM'].max()), 
-                               value=int(df['RM'].mean()))
+                               min_value=float(df['RM'].min()), 
+                               max_value=float(df['RM'].max()), 
+                               value=float(df['RM'].mean()))
                 
                 lstat = st.slider("% de población de estatus bajo (LSTAT)", 
                                   min_value=float(df['LSTAT'].min()), 
