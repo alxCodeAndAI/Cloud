@@ -14,7 +14,7 @@ import datetime
 
 # Configurar la página
 st.set_page_config(
-    page_title="Predictor de Precios de Viviendas",
+    page_title="Avaluador de Viviendas",
     page_icon="🏠",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -46,13 +46,13 @@ model, scaler = load_model()
 # Sidebar
 with st.sidebar:
     st.image("assets/logo.png", width=160)
-    page = st.sidebar.radio("Ir a:", ["Inicio", "Predicción", "Contacto"])
+    page = st.sidebar.radio("Ir a:", ["Inicio", "Avaluar", "Contacto"])
     st.markdown("---")
-    st.caption("© 2025 Predictor de Viviendas. Desarrollado por Home Value Predictor")
+    st.caption("© 2025 Avaluador de Viviendas. Desarrollado por Home Value Avaluador")
 
 # Página de inicio
 if page == "Inicio":
-    st.title("Bienvenido al Predictor de Precios de Viviendas")
+    st.title("Bienvenido al Avaluador Viviendas")
     st.markdown("""
     Esta aplicación utiliza un modelo de Machine Learning para estimar el precio de una vivienda basado en características relevantes.
     """)
@@ -92,9 +92,9 @@ elif page == "Predicción":
             
             with col1:
                 rm = st.slider("Número medio de habitaciones (RM)", 
-                               min_value=float(df['RM'].min()), 
-                               max_value=float(df['RM'].max()), 
-                               value=float(df['RM'].mean()))
+                               min_value=int(df['RM'].min()), 
+                               max_value=int(df['RM'].max()), 
+                               value=int(df['RM'].mean()))
                 
                 lstat = st.slider("% de población de estatus bajo (LSTAT)", 
                                   min_value=float(df['LSTAT'].min()), 
@@ -173,6 +173,6 @@ footer {
 }
 </style>
 <div style="text-align: center; padding: 10px; font-size: 12px; color: gray;">
-Desarrollado por Home Value Predictor| © 2025 Predictor de Viviendas
+Desarrollado por Home Value Avaluador| © 2025 Avaluador de Viviendas
 </div>
 """, unsafe_allow_html=True)
